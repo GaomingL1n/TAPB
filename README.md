@@ -1,6 +1,6 @@
 # TAPB: An Interventional Debiasing Framework for Alleviating Target Prior Bias in Drug-Target Interaction Prediction
 
-fully codes will be uploaded in several hours
+fully codes will be uploaded in several hours, our server is under maintenance
 
 This repository contains the PyTorch implementation of **TAPB** framework, as described in our paper
 ## Framework
