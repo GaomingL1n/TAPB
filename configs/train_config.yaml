@@ -1,15 +1,15 @@
 TRAIN:
-  BATCH_SIZE : 14
-  Stage1_MAX_EPOCH : 300
-  Stage23_MAX_EPOCH: 20
+  BATCH_SIZE : 60
+  Stage1_MAX_EPOCH : 100
+  Stage2_MAX_EPOCH: 50
+  SEED : 5
   LR : 2e-4
   WEIGHT_DECAY : 1e-4
   MASK_PROBABILITY : 0.15
-  DICT_SIZE : 6
-  PR_PATH : "pr_f_1280_2000_gpu0.pkl"
-  PR_CONFOUNDER_PATH : "pr_confounder_4_mean.pkl"
-  DRUG_CONFOUNDER_PATH : "drug_c.pkl"
-  FUSION_CONFOUNDER_PATH : "fusion_c.pkl"
+  PR_PATH : "pr_f_1280_2000.pkl"
+  DICT_SIZE : 8
+  PR_CONFOUNDER_PATH : "pr_confoudner.pkl"
   SAVE_MODEL : True
-  OUTPUT_DIR : "./results/bindingdb/random/tima_1280_64"
+  SAVE_LAST_EPOCH : True
+  OUTPUT_DIR : "ablation8_seed5"
 
