@@ -60,23 +60,6 @@ class TransformerDTI(nn.Module):
             self.confounder_W_q = nn.Linear(1280, 1280)
             self.confounder_W_k = nn.Linear(1280, 1280)
 
-        self.drug_confounder = drug_confounder
-        if self.drug_confounder is not None:
-            self.drug_confounder = drug_confounder.float().permute(1, 0)
-            self.confounder_W_q2 = nn.Linear(n_embd, n_embd)
-            self.confounder_W_k2 = nn.Linear(n_embd, n_embd)
-
-        self.fusion_confounder = fusion_confounder
-        if self.fusion_confounder is not None:
-            self.fusion_confounder = fusion_confounder.float().permute(1, 0)
-            self.confounder_W_q3 = nn.Linear(n_embd, n_embd)
-            self.confounder_W_k3 = nn.Linear(n_embd, n_embd)
-            freeze(self.drug_encoder)
-            freeze(self.pr_linear)
-            freeze(self.confounder_W_q)
-            freeze(self.confounder_W_k)
-            freeze(self.confounder_W_q2)
-            freeze(self.confounder_W_k2)
 
         # self.reset_parameters()
 
@@ -124,31 +107,6 @@ class TransformerDTI(nn.Module):
         pr_f = torch.cat((pr_f, Q),dim=-1)
         return pr_f
 
-    def drug_backdoor_adjust(self, drug_f, mask):
-        device = drug_f.device
-        bz, _, _ = drug_f.size()
-        len_c, _ = self.drug_confounder.size()
-        mask = mask.bool().unsqueeze(-1).expand(-1, -1, len_c)
-        Q = self.confounder_W_q2(drug_f)
-        K = self.confounder_W_k2(self.drug_confounder.unsqueeze(0).expand(bz,-1,-1))
-        attention = torch.matmul(Q, K.permute(0, 2, 1)) / torch.sqrt(torch.tensor(K.shape[2], dtype=torch.float32, device=device))
-        attention = attention.masked_fill(mask, -1e10)
-        attention = F.softmax(attention, dim=-1)
-        Q = torch.matmul(attention, K)
-        drug_f = torch.cat((drug_f, Q), dim=-1)
-        return drug_f
-
-    def multi_encoder_backdoor_adjust(self, cls):
-        device = cls.device
-        Q = self.confounder_W_q3(cls)
-        K = self.confounder_W_k3(self.fusion_confounder)
-        attention = torch.matmul(Q, K.permute(1, 0)) / torch.sqrt(
-            torch.tensor(K.shape[1], dtype=torch.float32, device=device))
-        attention = F.softmax(attention, dim=-1)
-        Q = torch.matmul(attention, K)
-        cls = cls + Q
-        return cls
-
     def forward(self, drug_id, drug_padding_mask, pr_f, protein_padding_mask, itm=False, mlm=False):
             bz, len_d = drug_id.size()
             drug_f = self.encode_drug(drug_id, drug_padding_mask, self.precompute_freqs_cis[:len_d, :].to(drug_id.device))
@@ -158,46 +116,7 @@ class TransformerDTI(nn.Module):
                 return {'drug_logits': drug_logits}
             else:
                 pr_f = self.encode_protein(pr_f, protein_padding_mask)
-            if itm:
-                drug_fs = drug_f[:, 0, :]
-                pr_fs = pr_f[:, 0, :]
-                drug_fs = F.normalize(drug_fs, dim=1)
-                pr_fs = F.normalize(pr_fs, dim=1)
-                sim = drug_fs @ pr_fs.T / self.tem
-                with torch.no_grad():
-                    weights = F.softmax(sim, dim=1)
-
-                    weights.fill_diagonal_(0)
-                pr_f_neg, pr_mask, drug_f_neg, drug_mask = [],[],[],[]
-                # for b in range(bz):
-                #     neg_idx = torch.multinomial(weights[b], 1).item()
-                #     pr_f_neg.append(pr_f[neg_idx])
-                #     pr_mask.append(protein_padding_mask[neg_idx])
-                #
-                #     weights = weights.T
-                #     neg_idx = torch.multinomial(weights[b], 1).item()
-                #     drug_f_neg.append(drug_f[neg_idx])
-                #     drug_mask.append(drug_padding_mask[neg_idx])
-                #
-                # pr_neg = torch.stack(pr_f_neg, dim=0)
-                # drug_neg = torch.stack(drug_f_neg, dim=0)
-                # pr_mask = torch.stack(pr_mask, dim=0)
-                # drug_mask = torch.stack(drug_mask, dim=0)
-                neg_idx_pr = torch.multinomial(weights, 1).flatten()  # 结果形状是 (bz,)
-                neg_idx_drug = torch.multinomial(weights.T, 1).flatten()  # 结果形状是 (bz,)
-
-                # 使用索引提取负样本和掩码
-                pr_neg = pr_f[neg_idx_pr]
-                drug_neg = drug_f[neg_idx_drug]
-
-                pr_mask = protein_padding_mask[neg_idx_pr]
-                drug_mask = drug_padding_mask[neg_idx_drug]
-
-                drug_f = torch.cat((drug_f, drug_f, drug_neg), dim=0)
-                pr_f = torch.cat((pr_f, pr_neg, pr_f), dim=0)
-                drug_padding_mask = torch.cat((drug_padding_mask, drug_padding_mask, drug_mask),dim=0)
-                protein_padding_mask = torch.cat((protein_padding_mask, pr_mask, protein_padding_mask),dim=0)
             fusion_f, attention_map = self.decode(drug_f, pr_f, drug_padding_mask, protein_padding_mask)
             cls = fusion_f[:, 0, :]
-            logits = self.MLP2(cls)
+            logits = self.MLP(cls)
             return {'logits': logits, 'attention_map': attention_map}
