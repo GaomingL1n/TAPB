@@ -4,7 +4,7 @@ fully codes will be uploaded in several hours
 
 This repository contains the PyTorch implementation of **TAPB** framework, as described in our paper
 ## Framework
-![TAPB](image/TAPB.jpg)
+![TAPB](image/TAPB.png)
 ## System Requirements
 
 The source code was developed in Python 3.8 using PyTorch 1.7.1. The required python dependencies are given below. TAPB is supported for any standard computer and operating system (Windows/macOS/Linux) with enough RAM to run. There is no additional non-standard hardware requirements.
