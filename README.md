@@ -1,3 +1,3 @@
 # TAPB
 
-codes will be uploaded in several hours
+fully codes will be uploaded in several hours
