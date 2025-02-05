@@ -131,13 +131,8 @@ class Trainer(object):
             drug_ids, drug_padding_mask, pr_ids, pr_padding_mask, labels = \
                 (drug_ids.to(self.device), drug_padding_mask.to(self.device), pr_ids.to(self.device),
                  pr_padding_mask.to(self.device), labels.to(self.device))
-            if self.stage == 1:
-                itm = False
             output = self.model(drug_ids, drug_padding_mask, pr_ids, pr_padding_mask, itm=itm)
-            if itm == True:
-                labels = torch.cat((labels, torch.zeros(labels.size(0)*2).to(self.device))*0.1, dim=0)
-            else:
-                labels = labels
+            labels = labels
             n, binary_loss = binary_cross_entropy(output['logits'], labels.float())
 
             if self.stage == 1:
