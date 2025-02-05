@@ -1,0 +1,15 @@
+TRAIN:
+  BATCH_SIZE : 14
+  Stage1_MAX_EPOCH : 300
+  Stage23_MAX_EPOCH: 20
+  LR : 2e-4
+  WEIGHT_DECAY : 1e-4
+  MASK_PROBABILITY : 0.15
+  DICT_SIZE : 6
+  PR_PATH : "pr_f_1280_2000_gpu0.pkl"
+  PR_CONFOUNDER_PATH : "pr_confounder_4_mean.pkl"
+  DRUG_CONFOUNDER_PATH : "drug_c.pkl"
+  FUSION_CONFOUNDER_PATH : "fusion_c.pkl"
+  SAVE_MODEL : True
+  OUTPUT_DIR : "./results/bindingdb/random/tima_1280_64"
+

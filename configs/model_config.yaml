@@ -1,0 +1,18 @@
+DrugEncoder:
+  n_embd : 64
+  n_layer : 3
+  n_head : 8
+  attention : 'OriginMHA'
+  activation : 'gelu'
+  dropout : 0.1
+  vocab_size : 2362
+
+TransformerDeocder:
+  n_embd: 64
+  n_layer: 3
+  n_head: 8
+  attention: 'OriginMHA'
+  activation: 'gelu'
+  dropout : 0.1
+
+
