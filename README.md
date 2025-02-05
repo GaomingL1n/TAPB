@@ -11,17 +11,35 @@ The source code was developed in Python 3.8 using PyTorch 1.7.1. The required py
 
 ```
 torch>=1.7.1
-dgl>=0.7.1
-dgllife>=0.2.8
 numpy>=1.20.2
 scikit-learn>=0.24.2
 pandas>=1.2.4
 prettytable>=2.2.1
 rdkit~=2021.03.2
-yacs~=0.1.8
-comet-ml~=3.23.1 # optional
+transformers
 ```
 
 ## Datasets
 
 The `datasets` folder contains all experimental data used in TAPB: [BindingDB](https://github.com/peizhenbai/DrugBAN), [BioSNAP](https://github.com/kexinhuang12345/MolTrans)
+
+## Run DrugBAN on Our Data to Reproduce Results
+
+To train TAPB, where we provide the basic configurations for all hyperparameters in `model_config.yaml` and 'train_config.yaml'. For different in-domain and cross-domain tasks, the customized task configurations can be found in respective `configs/*.yaml` files.
+
+For the in-domain experiments, you can directly run the following command. `${dataset}` could either be `bindingdb`, `biosnap`. `${split_task}` could be `random`. 
+
+```
+$ python main.py --data ${dataset} --split "random"
+```
+
+For the cross-domain experiments, you can directly run the following command. `${dataset}` could be either `bindingdb`, `biosnap`.
+
+```
+$ python main.py --data ${dataset} --split "cluster"
+```
+
+For the single stage testing, you can directly run the following command. `${dataset}` could be either `bindingdb`, `biosnap`. `${split}` could be `random`, `cluster`. 
+```
+$ python main.py --data ${dataset} --split  ${split}
+```
