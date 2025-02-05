@@ -1,5 +1,6 @@
 DrugEncoder:
-  n_embd : 64
+  model: 'RoBert'
+  d_model : 128
   n_layer : 3
   n_head : 8
   attention : 'OriginMHA'
@@ -7,8 +8,13 @@ DrugEncoder:
   dropout : 0.1
   vocab_size : 2362
 
+PrEncoder:
+  d_model : 1280
+  #esm2 or cnn
+  model: 'cnn'
+
 TransformerDeocder:
-  n_embd: 64
+  d_model: 128
   n_layer: 3
   n_head: 8
   attention: 'OriginMHA'
