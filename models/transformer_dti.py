@@ -20,14 +20,6 @@ class MLMHead(nn.Module):
         logits = self.linear2(x)
         return logits
 def precompute_freqs_cis(dim: int, end: int, theta: float = 10000.0):
-    """
-    这里预先计算每个序列中位置旋转的角度，以复数形式表达。
-    dim：为attention输入tensor的维度，简单来讲可以理解成embedding的维度
-    end：为序列的最大长度，即只计算0-end的旋转角度
-    theta：为超参数，原论文推荐值为10000
-    return：输出的是一个复数向量，向量shape为(end,dim//2)，第一维是是序列长度，
-            第二维为输入tensor维度的一半，因为旋转是以2维矩阵为单位的，即每两个数有一个旋转角度。
-"""
     freqs = 1.0 / (theta ** (torch.arange(0, dim, 2)[: (dim // 2)].float() / dim))
     t = torch.arange(end, device=freqs.device)  # type: ignore
     freqs = torch.outer(t, freqs).float()  # type: ignore
