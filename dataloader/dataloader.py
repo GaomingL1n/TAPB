@@ -89,15 +89,12 @@ def mask_tokens(inputs, attention_mask, tokenizer, probability=0.15):
 
 def drop_tokens(batch, drop_prob=0.75):
     batch_id, batch_mask = batch['input_ids'], batch['attention_mask']
-    num_to_retain = int(max(1, batch_id.size(1) * (1-drop_prob))) # 确保至少保留1个词
+    num_to_retain = int(max(1, batch_id.size(1) * (1-drop_prob))) 
 
-    # 随机选择要保留的索引，确保每个索引只被选中一次
     indices = sorted(random.sample(range(1, batch_id.size(1)), num_to_retain))
     indices.insert(0, 0)
-    # 根据选中的索引保留相应的词
     batch_id = batch_id[:, indices]
     batch_mask = batch_mask[:, indices]
-    # 将结果转换回Python列表并返回
     return batch_id, batch_mask
 
 def get_dataLoader(config, stage, dataset, drug_tokenizer, shuffle=False):
@@ -105,14 +102,12 @@ def get_dataLoader(config, stage, dataset, drug_tokenizer, shuffle=False):
         batch_Drug, batch_Drug2, batch_Protein, batch_label = [], [], [], []
         for sample in batch_samples:
             batch_Drug.append(sample['SMILES'])
-            # batch_Drug2.append(sample['SMILES2'])
             batch_Protein.append(sample['Protein'])
             batch_label.append(sample['Y'])
         batch_inputs_drug = drug_tokenizer(batch_Drug, padding='longest', return_tensors="pt")
-        # batch_inputs_drug2 = drug_tokenizer(batch_Drug2, padding='longest', return_tensors="pt")
         batch_pr = convert_batch_pr(batch_Protein)
-        if shuffle & stage != 3:
-            #batch_pr['input_ids'], batch_pr['attention_mask'] = drop_tokens(batch_pr, 0.5)
+        if shuffle:
+            #batch_pr['input_ids'], batch_pr['attention_mask'] = drop_tokens(batch_pr, 0.7)
             batch_inputs_drug['input_ids'], batch_inputs_drug['attention_mask'] = drop_tokens(batch_inputs_drug, 0.1)
         if stage == 1:
             batch_inputs_drug['masked_input_ids'], batch_inputs_drug['masked_drug_labels']\
@@ -123,7 +118,4 @@ def get_dataLoader(config, stage, dataset, drug_tokenizer, shuffle=False):
             'batch_inputs_pr': batch_pr,
             'labels': batch_label
         }
-
-    # return DataLoader(dataset, batch_size=config.TRAIN.BATCH_SIZE, shuffle=shuffle, collate_fn=collate_fn,
-    #                  num_workers=config.TRAIN.NUM_WORKERS, pin_memory=True, persistent_workers=True)
     return DataLoader(dataset, batch_size=config.TRAIN.BATCH_SIZE, shuffle=shuffle, collate_fn=collate_fn)
