@@ -41,5 +41,5 @@ $ python main.py --data ${dataset} --split "cluster"
 
 For the single stage testing, you can directly run the following command. `${dataset}` could be either `bindingdb`, `biosnap`. `${split}` could be `random`, `cluster`. 
 ```
-$ python main.py --data ${dataset} --split  ${split}
+$ python main_single_stage.py --data ${dataset} --split  ${split}
 ```
