@@ -23,7 +23,7 @@ transformers
 
 The `datasets` folder contains all experimental data used in TAPB: [BindingDB](https://github.com/peizhenbai/DrugBAN), [BioSNAP](https://github.com/kexinhuang12345/MolTrans)
 
-## Run DrugBAN on Our Data to Reproduce Results
+## Run TAPB on Our Data to Reproduce Results
 
 To train TAPB, where we provide the basic configurations for all hyperparameters in `model_config.yaml` and 'train_config.yaml'. For different in-domain and cross-domain tasks, the customized task configurations can be found in respective `configs/*.yaml` files.
 
