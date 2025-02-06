@@ -26,9 +26,9 @@ The `datasets` folder contains all experimental data used in TAPB: [BindingDB](h
 
 ## Run TAPB on Our Data to Reproduce Results
 
-To train TAPB, where we provide the basic configurations for all hyperparameters in `model_config.yaml` and 'train_config.yaml'.
+To train TAPB, where we provide the basic configurations for hyperparameters in `model_config.yaml` and 'train_config.yaml'.
 
-To accelerate the training process and reduce GPU memory usage, we pre-extract and save the target features for each dataset using ESM-2. The weights for ESM-2 can be downloaded from [Hugging Face](https://huggingface.co/facebook/esm2_t33_650M_UR50D). In `generate_pr_feature.py`, you can specify your dataset of interest.
+To accelerate the training process and reduce GPU memory usage, we pre-extract and save the target features for each dataset using ESM-2. The weights for ESM-2 can be downloaded from [Hugging Face](https://huggingface.co/facebook/esm2_t33_650M_UR50D). In `./models/protein/generate_pr_feature.py`, you can specify your dataset of interest.
 
 ```
 $ python generate_pr_feature.py
