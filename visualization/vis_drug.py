@@ -15,16 +15,14 @@ ems2_model_path = '../models/protein/esm2_model'
 MODEL_CONFIG_PATH = '../configs/model_config.yaml'
 model_configs = dict(load_config_file(MODEL_CONFIG_PATH))
 # set_seed(seed=2048)
-# Protein = 'MAKEWGYASHNGPDHWHELFPNAKGENQSPVELHTKDIRHDPSLQPWSVSYDGGSAKTILNNGKTCRVVFDDTYDRSMLRGGPLPGPYRLRQFHLHWGSSDDHGSEHTVDGVKYAAELHLVHWNPKYNTFKEALKQRDGIAVIGIFLKIGHENGEFQIFLDALDKIKTKGKEAPFTKFDPSCLFPACRDYWTYQGSFTTPPCEECIVWLLLKEPMTVSSDQMAKLRSLLSSAENEPPVPLVSNWRPPQPINNRVVRASFK'
-Drug = 'CCCCCCCC\C=C\CCCCCCCC(N)=O'
-Protein = 'MKTLLLLAVIMIFGLLQAHGNLVNFHRMIKLTTGKEAALSYGFYGCHCGVGGRGSPKDATDRCCVTHDCCYKRLEKRGCGTKFLSYKFSNSGSRITCAKQDSCRSQLCECDKAAATCFARNKTTYNKKYQYYSNKHCRGSTPRC'
+Drug = 'your_smiles'
+Protein = 'your_target_squence'
 
-
-dataset = 'biosnap'
-split = 'random'
+dataset = 'dataset'
+split = 'split'
 res = 'test'
 stage = 2
-model_path = f"../results/{dataset}/{split}/{res}/stage_{stage}_best_epoch_49.pth"
+model_path = f"../results/{dataset}/{split}/{res}/stage_{stage}_best_epoch_xxx.pth"
 head = model_configs['DrugEncoder']['n_head']
 topk = 5
 colors = ['#ffffff', '#db9ea3']
@@ -86,4 +84,4 @@ for i in range(head):
     AllChem.Compute2DCoords(mol)
 
     img = Draw.MolToImage(mol, highlightAtoms=atom_indices, size=(800, 800))
-    img.save(f'./pair5_{i}.png')
+    img.save(f'./pair_{i}.png')
