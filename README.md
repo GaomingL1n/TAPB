@@ -25,7 +25,7 @@ The `datasets` folder contains all experimental data used in TAPB: [BindingDB](h
 
 ## Run TAPB on Our Data to Reproduce Results
 
-To train TAPB, where we provide the basic configurations for all hyperparameters in `model_config.yaml` and 'train_config.yaml'. For different in-domain and cross-domain tasks, the customized task configurations can be found in respective `configs/*.yaml` files.
+To train TAPB, where we provide the basic configurations for all hyperparameters in `model_config.yaml` and 'train_config.yaml'.
 
 For the in-domain experiments, you can directly run the following command. `${dataset}` could either be `bindingdb`, `biosnap`. `${split_task}` could be `random`. 
 
