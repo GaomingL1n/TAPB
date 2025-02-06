@@ -36,30 +36,27 @@ def randomize_smile(sml):
 
     except:
         return sml
-# Drug = 'CCCCCCCC\C=C\CCCCCCCC(N)=O'
+# for example
+# Drug= 'CCCCCCCC\C=C\CCCCCCCC(N)=O'
 # Protein = 'MKTLLLLAVIMIFGLLQAHGNLVNFHRMIKLTTGKEAALSYGFYGCHCGVGGRGSPKDATDRCCVTHDCCYKRLEKRGCGTKFLSYKFSNSGSRITCAKQDSCRSQLCECDKAAATCFARNKTTYNKKYQYYSNKHCRGSTPRC'
-# Drug = 'CN[C@@H](C)C(=O)N[C@@H]1C(=O)N(Cc2c(C3CC3)cnc3ccccc23)c2ccccc2N(C(C)=O)[C@H]1C'#47
-# Protein = 'MRHHHHHHRDHFALDRPSETHADYLLRTGQVVDISDTIYPRNPAMYSEEARLKSFQNWPDYAHLTPRELASAGLYYTGIGDQVQCFACGGKLKNWEPGDFPNCFFVLGRAWSEHRRHRNLNIRSE'
-# Drug='O=C(N[C@H]1CCC[C@@H]1OCc1ccccc1)C1CCN(c2nc3cc(Cl)ccc3o2)CC1'
-# Protein ='MPNYKLTYFNMRGRAEIIRYIFAYLDIQYEDHRIEQADWPEIKSTLPFGKIPILEVDGLTLHQSLAIARYLTKNTDLAGNTEMEQCHVDAIVDTLDDFMSCFPWAEKKQDVKEQMFNELLTYNAPHLMQDLDTYLGGREWLIGNSVTWADFYWEICSTTLLVFKPDLLDNHPRLVTLRKKVQAIPAVANWIKRRPQTKL'
-# Drug='OC(=O)\C=C\C1=CC=C(C=C1)C(O)=O'
-# Protein ='MVLSPADKTNVKAAWGKVGAHAGEYGAEALERMFLSFPTTKTYFPHFDLSHGSAQVKGHGKKVADALTNAVAHVDDMPNALSALSDLHAHKLRVDPVNFKLLSHCLLVTLAAHLPAEFTPAVHASLDKFLASVSTVLTSKYR'
-#pair5
-# Drug = 'CCCCC1=C(NC2=NC=CN=C12)C1=CC=C(O)C=C1'
-# Protein = 'MQKYEKLEKIGEGTYGTVFKAKNRETHEIVALKRVRLDDDDEGVPSSALREICLLKELKHKNIVRLHDVLHSDKKLTLVFEFCDQDLKKYFDSCNGDLDPEIVKSFLFQLLKGLGFCHSRNVLHRDLKPQNLLINRNGELKLADFGLARAFGIPVRCYSAEVVTLWYRPPDVLFGAKLYSTSIDMWSAGCIFAELANAGRPLFPGNDVDDQLKRIFRLLGTPTEEQWPSMTKLPDYKPYPMYPATTSLVNVVPKLNATGRDLLQNLLKCNPVQRISAEEALQHPYFSDFCPP'
-Drug= 'CCCCCCCC\C=C\CCCCCCCC(N)=O'
-Protein = 'MKTLLLLAVIMIFGLLQAHGNLVNFHRMIKLTTGKEAALSYGFYGCHCGVGGRGSPKDATDRCCVTHDCCYKRLEKRGCGTKFLSYKFSNSGSRITCAKQDSCRSQLCECDKAAATCFARNKTTYNKKYQYYSNKHCRGSTPRC'
-dataset = 'biosnap'
-split = 'random'
+# dataset = 'biosnap'
+# split = 'random'
+# res = 'test'
+# stage = 2
+# model_path = f"../results/{dataset}/{split}/{res}/stage_{stage}_best_epoch_49.pth"
+# head = model_configs['DrugEncoder']['n_head']
+# begin = 0
+# end = 41
+Drug= 'your_smiles'
+Protein = 'your_target_squence'
+dataset = 'dataset'
+split = 'split'
 res = 'test'
-stage = 2
-model_path = f"../results/{dataset}/{split}/{res}/stage_{stage}_best_epoch_49.pth"
+stage = 2 #or 1
+model_path = f"../results/{dataset}/{split}/{res}/stage_{stage}_best_epoch_xxx.pth"
 head = model_configs['DrugEncoder']['n_head']
-begin = 0
-end = 41
-# begin = 1
-# end = 60
-
+begin = xxx
+end = xxx
 
 checkpoint = torch.load(model_path)
 
@@ -98,20 +95,14 @@ plt.rcParams['font.size'] = 12
 
 
 def sparse_protein_list(begin, end):
-    # 创建原始蛋白质编号列表
     Protein = list(range(begin, end))
-    # 创建一个与Protein长度相同的空列表，初始值全部为空字符串
     sparse_Protein = [' ' for _ in range(len(Protein))]
-
-    # 遍历Protein列表，每隔四个元素（即每五个元素）将值赋给sparse_Protein
     for i in range(len(Protein)):
-        if Protein[i] % 5 == 0:  # 因为我们从0开始计数，所以是i+1
+        if Protein[i] % 5 == 0:  
             sparse_Protein[i] = Protein[i]
 
     return sparse_Protein
 
-# 计算所有 attention_map 的最大值和最小值
-# all_attention_maps = torch.stack([attn_map[i].unsqueeze(0)[:, begin:end] for i in range(head)])
 vmin = 100
 vmax = 0
 
@@ -135,14 +126,13 @@ for i in range(head):
     ax.set_yticks([])
     if i == 7:
         Protein = sparse_protein_list(begin+21, end+21)
-        ax.set_xticks(list(range(end - begin)))  # 设置x轴刻度位置
+        ax.set_xticks(list(range(end - begin))) 
         ax.set_xticklabels(Protein)
     else:
         ax.set_xticks([])
-    # 调整子图间距，确保标签完全显示
     plt.subplots_adjust(bottom=0.4)
 
-    plt.savefig(f'./attn_map_pair5_head{i}-0-20.png')
+    plt.savefig(f'./attn_map_pair_head{i}-{begin}-{end}.png')
     plt.close(fig)
 
 
