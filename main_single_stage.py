@@ -67,7 +67,7 @@ def main():
         model = TransformerDTI(model_configs=model_configs).to(device)
         opt = torch.optim.AdamW(model.parameters(), lr=config.TRAIN.LR, weight_decay=config.TRAIN.WEIGHT_DECAY)
     else:
-        checkpoint_path = f'./results/{args.data}/random/0.7_random_8_123/stage_1_best_epoch_92.pth'
+        checkpoint_path = f'./results/{args.data}/your_weights.pth'
         kmeans_dataset = DTIDataset(df_train.index.values, df_train, pr_f)
         kmeans_dataloader = get_dataLoader(1, kmeans_dataset, drug_tokenizer)
         kmeans_confounder(device, stage, model_config, train_config, kmeans_dataloader, output_path + '/',
