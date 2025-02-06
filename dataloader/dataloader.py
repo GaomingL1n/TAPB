@@ -105,17 +105,20 @@ def mask_tokens(inputs, attention_mask, tokenizer, probability=0.15):
     # The rest of the time (10% of the time) we keep the masked input tokens unchanged
     return inputs, labels
 
-def drop_tokens(batch, drop_prob=0.75):
+def drop_tokens(batch, drop_prob=0.7):
     batch_id, batch_mask = batch['input_ids'], batch['attention_mask']
-    num_to_retain = int(max(1, batch_id.size(1) * (1-drop_prob))) # at least one token
+    num_to_retain = int(max(1, batch_id.size(1) * (1-drop_prob))) # 确保至少保留1个词
 
+    # 随机选择要保留的索引，确保每个索引只被选中一次
     indices = sorted(random.sample(range(1, batch_id.size(1)), num_to_retain))
     indices.insert(0, 0)
+    # 根据选中的索引保留相应的词
     batch_id = batch_id[:, indices]
     batch_mask = batch_mask[:, indices]
+    # 将结果转换回Python列表并返回
     return batch_id, batch_mask
 
-def get_dataLoader(batch_size, dataset, drug_tokenizer, shuffle=False, MLM=False):
+def get_dataLoader(batch_size, dataset, drug_tokenizer, shuffle=False, MLM=False, mask_rate=0.15, target_mask_rate=0.7):
     def collate_fn(batch_samples):
         batch_Drug, batch_Protein, batch_label = [], [], []
         for sample in batch_samples:
@@ -126,12 +129,12 @@ def get_dataLoader(batch_size, dataset, drug_tokenizer, shuffle=False, MLM=False
         batch_inputs_drug = drug_tokenizer(batch_Drug, padding='longest', return_tensors="pt", truncation=True, max_length=200)
         batch_inputs_drug_m, masked_drug_labels = None, None
         if shuffle:
-            batch_pr['input_ids'], batch_pr['attention_mask'] = drop_tokens(batch_pr, 0.7)
+            batch_pr['input_ids'], batch_pr['attention_mask'] = drop_tokens(batch_pr, target_mask_rate)
             # batch_Drug['input_ids'], batch_Drug['attention_mask'] = drop_tokens(batch_Drug, 0.7)
             # batch_inputs_drug['input_ids'], batch_inputs_drug['attention_mask'] = drop_tokens(batch_inputs_drug, 0.5)
             batch_inputs_drug_m = batch_inputs_drug
             batch_inputs_drug_m['input_ids'], masked_drug_labels\
-                = mask_tokens(batch_inputs_drug_m['input_ids'], batch_inputs_drug_m['attention_mask'], drug_tokenizer)
+                = mask_tokens(batch_inputs_drug_m['input_ids'], batch_inputs_drug_m['attention_mask'], drug_tokenizer,mask_rate)
         return {
             'batch_inputs_drug': batch_inputs_drug,
             'batch_inputs_drug_m': batch_inputs_drug_m,
