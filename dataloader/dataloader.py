@@ -105,17 +105,15 @@ def mask_tokens(inputs, attention_mask, tokenizer, probability=0.15):
     # The rest of the time (10% of the time) we keep the masked input tokens unchanged
     return inputs, labels
 
+# target random mask
 def drop_tokens(batch, drop_prob=0.7):
     batch_id, batch_mask = batch['input_ids'], batch['attention_mask']
-    num_to_retain = int(max(1, batch_id.size(1) * (1-drop_prob))) # 确保至少保留1个词
+    num_to_retain = int(max(1, batch_id.size(1) * (1-drop_prob)))
 
-    # 随机选择要保留的索引，确保每个索引只被选中一次
     indices = sorted(random.sample(range(1, batch_id.size(1)), num_to_retain))
     indices.insert(0, 0)
-    # 根据选中的索引保留相应的词
     batch_id = batch_id[:, indices]
     batch_mask = batch_mask[:, indices]
-    # 将结果转换回Python列表并返回
     return batch_id, batch_mask
 
 def get_dataLoader(batch_size, dataset, drug_tokenizer, shuffle=False, MLM=False, mask_rate=0.15, target_mask_rate=0.7):
