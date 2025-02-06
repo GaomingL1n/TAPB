@@ -11,5 +11,5 @@ TRAIN:
   PR_CONFOUNDER_PATH : "pr_confoudner.pkl"
   SAVE_MODEL : True
   SAVE_LAST_EPOCH : True
-  OUTPUT_DIR : "ablation8_seed5"
+  OUTPUT_DIR : "your_dir_name"
 
