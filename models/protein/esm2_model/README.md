@@ -5,4 +5,4 @@ These files are required:
 2. pytorch_model.bin
 3. special_tokens_map.txt
 4. tokenizer_config.txt
-5.vocab.txt
+5. vocab.txt
