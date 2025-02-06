@@ -1,6 +1,6 @@
 # TAPB: An Interventional Debiasing Framework for Alleviating Target Prior Bias in Drug-Target Interaction Prediction
 
-This repository contains the PyTorch implementation of **TAPB**，which aims to alleviating target prior bias in DTI prediction.
+This repository contains the PyTorch implementation of **TAPB**, which aims to alleviate target prior bias in DTI prediction.
 
 ## Framework
 
@@ -8,7 +8,7 @@ This repository contains the PyTorch implementation of **TAPB**，which aims to 
 
 ## System Requirements
 
-The source code was developed in Python 3.8 using PyTorch 1.7.1. The required python dependencies are given below. TAPB is supported for any standard computer and operating system (Windows/macOS/Linux) with enough RAM to run. There is no additional non-standard hardware requirements.
+The source code was developed in Python 3.8 using PyTorch 1.7.1. The required Python dependencies are given below. TAPB is supported for any standard computer and operating system (Windows/macOS/Linux) with enough RAM to run. There are no additional non-standard hardware requirements.
 
 ```
 torch>=1.7.1
@@ -26,7 +26,7 @@ The `datasets` folder contains all experimental data used in TAPB: [BindingDB](h
 
 ## Run TAPB on Our Data to Reproduce Results
 
-To train TAPB, we provide the basic configurations for hyperparameters in `model_config.yaml` and 'train_config.yaml'.
+To train TAPB, we provide the basic configurations for hyperparameters in `model_config.yaml` and `train_config.yaml`.
 
 
 For that we use Molformer's tokenizer to seg SMILES and ESM-2 to extract target features, please download the weights and related files and put them into `./models/drug/molformer` and `./protein/esm2_model`, separately.
