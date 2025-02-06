@@ -73,3 +73,19 @@ def inverse_sigmoid(x, eps=1e-3):
     x1 = x.clamp(min=eps)
     x2 = (1 - x).clamp(min=eps)
     return torch.log(x1/x2)
+
+class GradMulConst(torch.autograd.Function):
+    """
+    This layer is used to create an adversarial loss.
+    """
+    @staticmethod
+    def forward(ctx, x, const):
+        ctx.const = const
+        return x.view_as(x)
+
+    @staticmethod
+    def backward(ctx, grad_output):
+        return grad_output * ctx.const, None
+
+def grad_mul_const(x, const):
+    return GradMulConst.apply(x, const)
