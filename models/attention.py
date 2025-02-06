@@ -5,10 +5,6 @@ import torch.nn.functional as F
 from torch.nn.init import kaiming_uniform_, xavier_uniform_, constant_
 
 def reshape_for_broadcast(freqs_cis: torch.Tensor, x: torch.Tensor):
-    """
-    将预先计算好的旋转角度freqs_cis的shape与输入shape统一。
-    freqs_cis的维数会变为和x一致，其中第二维是freqs_cis.shape[0],最后一维是freqs_cis.shape[1],其余维度为1
-    """
     ndim = x.ndim
     assert 0 <= 1 < ndim
     assert freqs_cis.shape == (x.shape[1], x.shape[-1])
@@ -21,9 +17,6 @@ def apply_rotary_emb(
     xk: torch.Tensor,
     freqs_cis: torch.Tensor,
 ):
-    """
-    用预先计算的角度来旋转输入的xq和xk，做法是利用复数乘法的性质来完成旋转
-    """
     xq_ = torch.view_as_complex(xq.float().reshape(*xq.shape[:-1], -1, 2))
     xk_ = torch.view_as_complex(xk.float().reshape(*xk.shape[:-1], -1, 2))
     freqs_cis = reshape_for_broadcast(freqs_cis, xq_)
