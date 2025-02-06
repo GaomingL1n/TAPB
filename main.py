@@ -54,15 +54,7 @@ def main(stage, best_epoch=0):
             model = TransformerDTI(pr_confounder=pr_confounder,
                                    drug_confounder=drug_confounder,
                                    model_configs=model_configs).to(device)
-        elif stage == 3:
-            confounder_path = os.path.join(dataFolder, config.TRAIN.FUSION_CONFOUNDER_PATH)
-            fusion_confounder = open(confounder_path, 'rb')
-            fuison_confounder = torch.from_numpy(pickle.load(fusion_confounder)['cluster_centers']).to(device)
-
-            model = TransformerDTI(pr_confounder=pr_confounder,
-                                   drug_confounder=drug_confounder,
-                                   fusion_confounder=fuison_confounder,
-                                   model_configs=model_configs).to(device)
+       
         checkpoint = torch.load(config.TRAIN.OUTPUT_DIR + f"/stage_{stage-1}_best_epoch_{best_epoch}.pth")
         model.load_state_dict(checkpoint, strict=False)
         opt = torch.optim.AdamW(filter(lambda p: p.requires_grad, model.parameters()), lr=config.TRAIN.LR, weight_decay=config.TRAIN.WEIGHT_DECAY)
