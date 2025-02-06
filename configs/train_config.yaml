@@ -6,6 +6,7 @@ TRAIN:
   LR : 2e-4
   WEIGHT_DECAY : 1e-4
   MASK_PROBABILITY : 0.15
+  TARGET_RANDOM_MASK_RATIO : 0.7
   PR_PATH : "pr_f_1280_2000.pkl"
   DICT_SIZE : 8
   PR_CONFOUNDER_PATH : "pr_confoudner.pkl"
