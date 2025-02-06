@@ -10,8 +10,6 @@ DrugEncoder:
 
 PrEncoder:
   d_model : 1280
-  #esm2 or cnn
-  model: 'cnn'
 
 TransformerDeocder:
   d_model: 128
