@@ -33,8 +33,9 @@ class MLMHead(nn.Module):
         logits = self.linear2(x)
         return logits
 
+# TAPB FRAMEWORK
 class TransformerDTI(nn.Module):
-    def __init__(self, model_configs, pr_confounder=None, drug_confounder=None, pr_prior=None, drug_prior=None):
+    def __init__(self, model_configs, pr_confounder=None):
         super().__init__()
         # Params
         d_model = model_configs['DrugEncoder']['d_model']
