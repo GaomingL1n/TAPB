@@ -1,10 +1,11 @@
 # TAPB: An Interventional Debiasing Framework for Alleviating Target Prior Bias in Drug-Target Interaction Prediction
 
-fully codes will be uploaded in several hours, our server is under maintenance
+This repository contains the PyTorch implementation of **TAPB**，which aims to alleviating target prior bias in DTI prediction.
 
-This repository contains the PyTorch implementation of **TAPB** framework, as described in our paper
 ## Framework
+
 ![TAPB](image/TAPB.png)
+
 ## System Requirements
 
 The source code was developed in Python 3.8 using PyTorch 1.7.1. The required python dependencies are given below. TAPB is supported for any standard computer and operating system (Windows/macOS/Linux) with enough RAM to run. There is no additional non-standard hardware requirements.
@@ -27,19 +28,28 @@ The `datasets` folder contains all experimental data used in TAPB: [BindingDB](h
 
 To train TAPB, where we provide the basic configurations for all hyperparameters in `model_config.yaml` and 'train_config.yaml'.
 
-For the in-domain experiments, you can directly run the following command. `${dataset}` could either be `bindingdb`, `biosnap`. `${split_task}` could be `random`. 
+To accelerate the training process and reduce GPU memory usage, we pre-extract and save the target features using ESM-2. The weights for ESM-2 can be downloaded from Hugging Face. In `generate_pr_feature.py` , you can specify your dataset of interest.
+
+```
+$ python generate_pr_feature.py
+```
+
+For the in-domain experiments, you can directly run the following command for 2 stage interventional training. `${dataset}` could either be `bindingdb`, `biosnap`. `${split_task}` could be `random`. 
 
 ```
 $ python main.py --data ${dataset} --split "random"
 ```
 
-For the cross-domain experiments, you can directly run the following command. `${dataset}` could be either `bindingdb`, `biosnap`.
+For the cross-domain experiments, you can directly run the following command for 2 stage interventional training. . `${dataset}` could be either `bindingdb`, `biosnap`.
 
 ```
 $ python main.py --data ${dataset} --split "cluster"
 ```
 
 For the single stage testing, you can directly run the following command. `${dataset}` could be either `bindingdb`, `biosnap`. `${split}` could be `random`, `cluster`. 
+
 ```
 $ python main_single_stage.py --data ${dataset} --split  ${split}
 ```
+
+fully codes will be uploaded in several hours, our server is under maintenance
