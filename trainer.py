@@ -14,20 +14,22 @@ from tqdm import tqdm
 
 
 class Trainer(object):
-    def __init__(self, model, optim, device, stage, train_dataloader, val_dataloader, test_dataloader, config):
+    def __init__(self, model, optim, device, stage, train_dataloader, val_dataloader, test_dataloader, output_path, config):
         self.model = model
         self.optim = optim
         self.device = device
+        self.batch_size = config.TRAIN.BATCH_SIZE
         if stage == 1:
             self.epochs = config.TRAIN.Stage1_MAX_EPOCH
         else:
-            self.epochs = config.TRAIN.Stage23_MAX_EPOCH
+            self.epochs = config.TRAIN.Stage2_MAX_EPOCH
+
         self.current_epoch = 0
         self.train_dataloader = train_dataloader
         self.val_dataloader = val_dataloader
         self.test_dataloader = test_dataloader
         self.step = 0
-        self.batch_size = config.TRAIN.BATCH_SIZE
+
         self.nb_training = len(self.train_dataloader)
 
         self.best_model = None
@@ -39,7 +41,7 @@ class Trainer(object):
         self.val_loss_epoch, self.val_auroc_epoch = [], []
         self.test_metrics = {}
         self.config = config
-        self.output_dir = config.TRAIN.OUTPUT_DIR
+        self.output_dir = output_path
         self.stage = stage
         valid_metric_header = ["# Epoch", "AUROC", "AUPRC"]
         test_metric_header = ["# Best Epoch", "AUROC", "AUPRC", "F1", "Sensitivity", "Specificity", "Accuracy",
@@ -99,6 +101,8 @@ class Trainer(object):
             "config": self.config
         }
         torch.save(state, os.path.join(self.output_dir, f"result_metrics.pt"))
+        if self.config.TRAIN.SAVE_LAST_EPOCH:
+            torch.save(self.model.state_dict(), os.path.join(self.output_dir, f"stage_{self.stage}_last_epcoh.pth"))
 
         val_prettytable_file = os.path.join(self.output_dir, 'Stage_' + str(self.stage) +"_valid_markdowntable.txt")
         test_prettytable_file = os.path.join(self.output_dir, 'Stage_' + str(self.stage) +"_test_markdowntable.txt")
@@ -113,42 +117,43 @@ class Trainer(object):
     def train_epoch(self):
         self.model.train()
         loss_epoch = 0
+        r=0
         num_batches = len(self.train_dataloader)
-        loop = tqdm(self.train_dataloader, colour='#ff4777', file=sys.stdout, ncols=120)
+        loop = tqdm(self.train_dataloader, colour='#ff4777', file=sys.stdout, ncols=150)
         loop.set_description(f'Stage {self.stage} Train Epoch[{self.current_epoch}/{self.epochs}]')
         for step, batch in enumerate(loop):
             self.optim.zero_grad()
             self.step += 1
-            input_drugs = batch['batch_inputs_drug']
-            input_proteins = batch['batch_inputs_pr']
-            labels = torch.tensor(batch['labels'])
-
-            drug_ids = input_drugs['input_ids']
-            drug_padding_mask = input_drugs['attention_mask']
-            pr_ids = input_proteins['input_ids']
-            pr_padding_mask = input_proteins['attention_mask']
-
-            drug_ids, drug_padding_mask, pr_ids, pr_padding_mask, labels = \
-                (drug_ids.to(self.device), drug_padding_mask.to(self.device), pr_ids.to(self.device),
-                 pr_padding_mask.to(self.device), labels.to(self.device))
-            output = self.model(drug_ids, drug_padding_mask, pr_ids, pr_padding_mask, itm=itm)
-            labels = labels
-            n, binary_loss = binary_cross_entropy(output['logits'], labels.float())
+            r+=1
+            input_drugs = batch['batch_inputs_drug'].to(self.device)
+            input_proteins = batch['batch_inputs_pr']['input_ids'].to(self.device)
+            pr_mask = batch['batch_inputs_pr']['attention_mask'].to(self.device)
+            labels = torch.tensor(batch['labels']).to(self.device)
 
             if self.stage == 1:
-                masked_drug_ids = input_drugs['masked_input_ids'].to(self.device)
-                drug_labels = input_drugs['masked_drug_labels'].to(self.device)
-                output = self.model(masked_drug_ids, drug_padding_mask, pr_ids, pr_padding_mask, mlm=True)
-                mask_loss = nn.CrossEntropyLoss(ignore_index=-1)(output['drug_logits'], drug_labels)
-                loss = 0.9 * binary_loss + 0.1 * mask_loss
+                inputs_drugs_m = batch['batch_inputs_drug_m'].to(self.device)
+                drug_labels = batch['masked_drug_labels'].to(self.device)
+                output = self.model(input_drugs, input_proteins, pr_mask=pr_mask, masked_drugs=inputs_drugs_m)
+                mlm_loss = nn.CrossEntropyLoss(ignore_index=-1)(output['drug_mlm_logits'], drug_labels)
+                # labels = torch.cat((labels,torch.zeros_like(labels)),0)
+                b_loss = cross_entropy(output['logits'], labels)
+                # b_loss2 = cross_entropy(output['pr_logits'], labels)
+                # b_loss3 = cross_entropy(output['drug_logits'], labels)
+                # loss = b_loss
+                loss = b_loss+ mlm_loss
+                # loss = b_loss + mlm_loss + b_loss2 +b_loss3
             else:
-                loss = binary_loss
+                output = self.model(input_drugs, input_proteins, pr_mask=pr_mask)
+                # b_label = torch.cat((labels, torch.zeros_like(labels)), 0)
+                # loss = cross_entropy(output['logits'], b_label)
+                loss = cross_entropy(output['logits'], labels)
+
             loss.backward()
             self.optim.step()
             loss_epoch += loss.item()
+            loop.set_postfix(avg_loss=loss_epoch / r)
 
         loss_epoch = loss_epoch / num_batches
-        print('Stage ' + str(self.stage) + ' Training at Epoch ' + str(self.current_epoch) + ' with average loss ' + str(loss_epoch))
         return loss_epoch
 
     def test(self, dataloader="test"):
@@ -167,24 +172,18 @@ class Trainer(object):
             elif dataloader == "test":
                 loop.set_description(f'Stage {self.stage} Test')
             for step, batch in enumerate(loop):
-                input_drugs = batch['batch_inputs_drug']
-                input_proteins = batch['batch_inputs_pr']
+                input_drugs = batch['batch_inputs_drug'].to(self.device)
+                input_proteins = batch['batch_inputs_pr']['input_ids'].to(self.device)
+                pr_mask = batch['batch_inputs_pr']['attention_mask'].to(self.device)
                 labels = batch['labels']
 
-                drug_ids = input_drugs['input_ids']
-                drug_padding_mask = input_drugs['attention_mask']
-                pr_ids = input_proteins['input_ids']
-                pr_padding_mask = input_proteins['attention_mask']
-
-                drug_ids, drug_padding_mask, pr_ids, pr_padding_mask = \
-                drug_ids.to(self.device), drug_padding_mask.to(self.device), \
-                pr_ids.to(self.device), pr_padding_mask.to(self.device)
-
                 if dataloader == "val":
-                    logits = self.model(drug_ids, drug_padding_mask, pr_ids, pr_padding_mask)['logits']
+                    output = self.model(input_drugs, input_proteins, pr_mask=pr_mask)
+
                 elif dataloader == "test":
-                    logits = self.best_model(drug_ids, drug_padding_mask, pr_ids, pr_padding_mask)['logits']
-                n, loss = binary_cross_entropy(logits, torch.tensor(labels).to(self.device).float())
+                    output = self.best_model(input_drugs, input_proteins, pr_mask=pr_mask)
+
+                n = output['logits'][:, 1]
                 y_label = y_label + labels
                 y_pred = y_pred + n.tolist()
         auroc = roc_auc_score(y_label, y_pred)
@@ -205,14 +204,14 @@ class Trainer(object):
             return auroc, auprc, np.max(f1[5:]), sensitivity, specificity, accuracy, thred_optim, precision1
         else:
             return auroc, auprc
-def binary_cross_entropy(pred_output, labels):
+
+def binary_cross_entropy(n, labels):
     loss_fct = torch.nn.BCELoss()
-    m = nn.Sigmoid()
-    n = torch.squeeze(m(pred_output), 1)
-    loss = loss_fct(n, labels)
-    return n, loss
+    loss = loss_fct(n, labels.float())
+    return loss
 
 def cross_entropy(preds, targets, reduction='none'):
-    log_softmax = nn.LogSoftmax(dim=-1)
-    loss = (-targets * log_softmax(preds)).sum(1)
+    preds = torch.log(preds)
+    loss_f = nn.NLLLoss()
+    loss = loss_f(preds, targets.long())
     return loss
