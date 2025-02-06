@@ -6,7 +6,8 @@ from tqdm import tqdm
 from transformers import AutoTokenizer, EsmModel
 
 print('start')
-dataset = 'biosnap/random/'
+# for example, dataset = 'biosnap/random/'
+dataset = 'your_data_set/split/'
 dataset_path = '../../datasets/'+dataset
 save_path = dataset_path+'pr_f_1280_2000.pkl'
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
@@ -20,7 +21,6 @@ model.eval()  # disables dropout for deterministic results
 prlist = list()
 
 for protein_id in tqdm(df['pr_id'].unique(), desc='Processing'):
-    # 获取该蛋白质ID对应的蛋白质序列
     protein_seq = df[df['pr_id'] == protein_id]['Protein'].iloc[0]
     inputs = tokenizer(protein_seq, return_tensors="pt", truncation = True, max_length=2000).to(device)
     with torch.no_grad():
