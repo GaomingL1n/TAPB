@@ -22,7 +22,7 @@ transformers
 
 ## Datasets
 
-The `datasets` folder contains all experimental data used in TAPB: [BindingDB](https://github.com/peizhenbai/DrugBAN), [BioSNAP](https://github.com/kexinhuang12345/MolTrans)
+The `datasets` folder contains all experimental data used in TAPB: [BindingDB](https://github.com/peizhenbai/DrugBAN), [BioSNAP](https://github.com/peizhenbai/DrugBAN)
 
 ## Run TAPB on Our Data to Reproduce Results
 
