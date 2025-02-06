@@ -8,9 +8,7 @@ class DTIDataset(Dataset):
     def __init__(self, list_IDs, df, pr_features):
         self.list_IDs = list_IDs
         self.df = df
-        #self.drug_ids = drug_ids
         self.pr_features = pr_features
-
     def __len__(self):
         return len(self.list_IDs)
 
@@ -18,18 +16,14 @@ class DTIDataset(Dataset):
         index = self.list_IDs[idx]
         # smiles
         SMILES = self.df.iloc[index]['SMILES']
-        # SMILES2 = randomize_smile(SMILES)
-
-
+        # SMILES = randomize_smile(SMILES)
         # proteins
         pr_id = self.df.iloc[index]['pr_id']
         Protein = self.pr_features[pr_id]
         # labels
         y = self.df.iloc[index]["Y"]
-
         return {
             'SMILES': SMILES,
-            # 'SMILES2': SMILES2,
             'Protein': Protein,
             'Y': y
         }
@@ -55,6 +49,29 @@ def randomize_smile(sml):
 
     except:
         return sml
+
+
+def randomize_smile_with_mapping(sml):
+    try:
+        # Parse the SMILES string into a molecule object
+        m = Chem.MolFromSmiles(sml)
+        # Create a mapping from atom index to its position in the SMILES
+        atom_indices = list(range(m.GetNumAtoms()))
+        np.random.shuffle(atom_indices)  # Shuffle the indices
+
+        # Renumber the atoms according to the shuffled indices
+        nm = Chem.RenumberAtoms(m, atom_indices)
+
+        # Generate the new SMILES string
+        new_smiles = Chem.MolToSmiles(nm, canonical=False)
+
+        # Create a mapping from original atom indices to new positions
+        original_to_new_positions = {i: atom_indices.index(i) for i in range(len(atom_indices))}
+
+        return new_smiles, original_to_new_positions
+    except:
+        return sml, {}
+
 def convert_batch_pr(batch):
     max_len = max([tensor.shape[0] for tensor in batch])
     mask = torch.zeros(len(batch), max_len)
@@ -62,6 +79,7 @@ def convert_batch_pr(batch):
         mask[i, :tensor.shape[0]] = 1
     padded_batch = pad(batch, batch_first=True)
     return {'input_ids': padded_batch, 'attention_mask': mask}
+
 def mask_tokens(inputs, attention_mask, tokenizer, probability=0.15):
     """ Prepare masked tokens inputs/labels for masked language modeling: 80% MASK, 10% random, 10% original. """
     labels = inputs.clone()
@@ -89,33 +107,39 @@ def mask_tokens(inputs, attention_mask, tokenizer, probability=0.15):
 
 def drop_tokens(batch, drop_prob=0.75):
     batch_id, batch_mask = batch['input_ids'], batch['attention_mask']
-    num_to_retain = int(max(1, batch_id.size(1) * (1-drop_prob))) 
+    num_to_retain = int(max(1, batch_id.size(1) * (1-drop_prob))) # 确保至少保留1个词
 
+    # 随机选择要保留的索引，确保每个索引只被选中一次
     indices = sorted(random.sample(range(1, batch_id.size(1)), num_to_retain))
     indices.insert(0, 0)
+    # 根据选中的索引保留相应的词
     batch_id = batch_id[:, indices]
     batch_mask = batch_mask[:, indices]
+    # 将结果转换回Python列表并返回
     return batch_id, batch_mask
 
-def get_dataLoader(config, stage, dataset, drug_tokenizer, shuffle=False):
+def get_dataLoader(batch_size, dataset, drug_tokenizer, shuffle=False, MLM=False):
     def collate_fn(batch_samples):
-        batch_Drug, batch_Drug2, batch_Protein, batch_label = [], [], [], []
+        batch_Drug, batch_Protein, batch_label = [], [], []
         for sample in batch_samples:
-            batch_Drug.append(sample['SMILES'])
             batch_Protein.append(sample['Protein'])
+            batch_Drug.append(sample['SMILES'])
             batch_label.append(sample['Y'])
-        batch_inputs_drug = drug_tokenizer(batch_Drug, padding='longest', return_tensors="pt")
         batch_pr = convert_batch_pr(batch_Protein)
+        batch_inputs_drug = drug_tokenizer(batch_Drug, padding='longest', return_tensors="pt", truncation=True, max_length=200)
+        batch_inputs_drug_m, masked_drug_labels = None, None
         if shuffle:
-            #batch_pr['input_ids'], batch_pr['attention_mask'] = drop_tokens(batch_pr, 0.7)
-            batch_inputs_drug['input_ids'], batch_inputs_drug['attention_mask'] = drop_tokens(batch_inputs_drug, 0.1)
-        if stage == 1:
-            batch_inputs_drug['masked_input_ids'], batch_inputs_drug['masked_drug_labels']\
-                = mask_tokens(batch_inputs_drug['input_ids'], batch_inputs_drug['attention_mask'], drug_tokenizer)
+            batch_pr['input_ids'], batch_pr['attention_mask'] = drop_tokens(batch_pr, 0.7)
+            # batch_Drug['input_ids'], batch_Drug['attention_mask'] = drop_tokens(batch_Drug, 0.7)
+            # batch_inputs_drug['input_ids'], batch_inputs_drug['attention_mask'] = drop_tokens(batch_inputs_drug, 0.5)
+            batch_inputs_drug_m = batch_inputs_drug
+            batch_inputs_drug_m['input_ids'], masked_drug_labels\
+                = mask_tokens(batch_inputs_drug_m['input_ids'], batch_inputs_drug_m['attention_mask'], drug_tokenizer)
         return {
             'batch_inputs_drug': batch_inputs_drug,
-            # 'batch_inputs_drug2':batch_inputs_drug2,
+            'batch_inputs_drug_m': batch_inputs_drug_m,
+            'masked_drug_labels': masked_drug_labels,
             'batch_inputs_pr': batch_pr,
             'labels': batch_label
         }
-    return DataLoader(dataset, batch_size=config.TRAIN.BATCH_SIZE, shuffle=shuffle, collate_fn=collate_fn)
+    return DataLoader(dataset, batch_size=batch_size, shuffle=shuffle, collate_fn=collate_fn)
