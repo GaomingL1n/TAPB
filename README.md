@@ -51,5 +51,3 @@ For the single-stage testing, you can change the settings in `main_single_stage.
 ```
 $ python main_single_stage.py --data ${dataset} --split  ${split}
 ```
-
-fully codes will be uploaded in several hours, our server is under maintenance
