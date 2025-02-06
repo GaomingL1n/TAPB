@@ -46,7 +46,7 @@ For the cross-domain experiments, you can directly run the following command for
 $ python main.py --data ${dataset} --split "cluster"
 ```
 
-For the single stage testing, you can directly run the following command. `${dataset}` could be either `bindingdb`, `biosnap`. `${split}` could be `random`, `cluster`. 
+For the single-stage testing, you can change the settings in `main_single_stage.py` and run the following command. `${dataset}` could be either `bindingdb`, `biosnap`. `${split}` could be `random`, `cluster`. 
 
 ```
 $ python main_single_stage.py --data ${dataset} --split  ${split}
