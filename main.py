@@ -83,7 +83,7 @@ def main(stage, best_epoch=0):
     bz = config.TRAIN.BATCH_SIZE
     mask_rate = config.TRAIN.MASK_PROBABILITY
     target_mask_rate = config.TRAIN.TARGET_RANDOM_MASK_RATIO
-    train_dataloader = get_dataLoader(bz, train_dataset, drug_tokenizer, shuffle=True, MLM=MLM,mask_rate=mask_rate,target_mask_rate=target_mask_rate)
+    train_dataloader = get_dataLoader(bz, train_dataset, drug_tokenizer, shuffle=True, MLM=MLM, mask_rate=mask_rate, target_mask_rate=target_mask_rate)
     val_dataloader = get_dataLoader(bz, val_dataset, drug_tokenizer)
     test_dataloader = get_dataLoader(bz, test_dataset, drug_tokenizer)
 
