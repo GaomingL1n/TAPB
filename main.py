@@ -37,7 +37,6 @@ def main(stage, best_epoch=0):
     set_seed(seed=config.TRAIN.SEED)
     output_path = f"./results/{args.data}/{args.split}/{config.TRAIN.OUTPUT_DIR}"
     mkdir(output_path)
-
     dataFolder = f'./datasets/{args.data}'
     dataFolder = os.path.join(dataFolder, str(args.split))
 
@@ -82,7 +81,9 @@ def main(stage, best_epoch=0):
 
     drug_tokenizer = AutoTokenizer.from_pretrained(mol_path, trust_remote_code=True)
     bz = config.TRAIN.BATCH_SIZE
-    train_dataloader = get_dataLoader(bz, train_dataset, drug_tokenizer, shuffle=True, MLM=MLM)
+    mask_rate = config.TRAIN.MASK_PROBABILITY
+    target_mask_rate = config.TRAIN.TARGET_RANDOM_MASK_RATIO
+    train_dataloader = get_dataLoader(bz, train_dataset, drug_tokenizer, shuffle=True, MLM=MLM,mask_rate=mask_rate,target_mask_rate=target_mask_rate)
     val_dataloader = get_dataLoader(bz, val_dataset, drug_tokenizer)
     test_dataloader = get_dataLoader(bz, test_dataset, drug_tokenizer)
 

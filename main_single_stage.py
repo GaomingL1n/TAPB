@@ -85,17 +85,15 @@ def main():
         model.load_state_dict(checkpoint, strict=False)
         opt = torch.optim.AdamW(filter(lambda p: p.requires_grad, model.parameters()), lr=config.TRAIN.LR, weight_decay=config.TRAIN.WEIGHT_DECAY*5)
 
-
-
-
-
     train_dataset = DTIDataset(df_train.index.values, df_train, pr_f)
     val_dataset = DTIDataset(df_val.index.values, df_val, pr_f)
     test_dataset = DTIDataset(df_test.index.values, df_test, pr_f)
 
-
     bz = config.TRAIN.BATCH_SIZE
-    train_dataloader = get_dataLoader(bz, train_dataset, drug_tokenizer, shuffle=True)
+    mask_rate = config.TRAIN.MASK_PROBABILITY
+    target_mask_rate = config.TRAIN.TARGET_RANDOM_MASK_RATIO
+    train_dataloader = get_dataLoader(bz, train_dataset, drug_tokenizer, shuffle=True, mask_rate=mask_rate,
+                                      target_mask_rate=target_mask_rate)
     val_dataloader = get_dataLoader(bz, val_dataset, drug_tokenizer)
     test_dataloader = get_dataLoader(bz, test_dataset, drug_tokenizer)
 
