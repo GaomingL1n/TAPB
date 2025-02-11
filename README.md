@@ -8,16 +8,20 @@ This repository contains the PyTorch implementation of **TAPB**, which aims to a
 
 ## System Requirements
 
-The source code was developed in Python 3.8 using PyTorch 1.7.1. The required Python dependencies are given below. TAPB is supported for any standard computer and operating system (Windows/macOS/Linux) with enough RAM to run. There are no additional non-standard hardware requirements.
+The source code was developed in Python 3.9 using PyTorch 2.2.1. The required Python dependencies are given below. TAPB is supported for any standard computer and operating system (Windows/macOS/Linux) with enough RAM to run. There are no additional non-standard hardware requirements.
 
 ```
-torch>=1.7.1
-numpy>=1.20.2
-scikit-learn>=0.24.2
-pandas>=1.2.4
+torch=2.2.1
+numpy=1.23.0
+scikit-learn=1.2.1
+pandas=2.2.3
 prettytable>=2.2.1
-rdkit~=2021.03.2
-transformers
+rdkit~=2024.3.3
+transformers=4.38.2
+tqdm~=4.66.2
+pandas~=2.2.3
+matplotlib=3.5.0
+omegaconf=2.3.0
 ```
 
 ## Datasets
